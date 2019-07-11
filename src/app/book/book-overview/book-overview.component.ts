@@ -1,26 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Book } from '../book';
+import { BookService } from '../services/book.service';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-book-overview',
   templateUrl: './book-overview.component.html',
   styleUrls: ['./book-overview.component.scss']
 })
-export class BookOverviewComponent {
-  books: Book[] = [
-    {
-      id: 0,
-      author: 'Douglas Crockford',
-      title: 'JavaScript. The Good Parts'
-    },
-    {
-      id: 1,
-      author: 'Kyle Simpson',
-      title: 'You don\'t know JS'
-    }
-  ];
+export class BookOverviewComponent implements OnInit {
+  books$: Observable<Book[]>;
 
   selectedBook: Book | undefined;
+
+  constructor(readonly bookService: BookService) {
+  }
+
+  ngOnInit(): void {
+    this.books$ = this.bookService.findAll();
+  }
 
   selectBook(book: Book) {
     this.selectedBook = book;
@@ -31,8 +29,7 @@ export class BookOverviewComponent {
   }
 
   updateBook(book: Book) {
-    this.books = this.books.map(
-      currBook => currBook.id === book.id ? book : currBook);
+    this.bookService.update(book);
     this.selectedBook = book;
   }
 }

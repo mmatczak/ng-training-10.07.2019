@@ -12,7 +12,7 @@ import { BookModule } from './book/book.module';
     BrowserModule,
     BookModule
   ],
-  providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}
