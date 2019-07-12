@@ -1,12 +1,17 @@
-<form (submit)="saveAndGoToBookOverview($event)"
-      *ngIf="book$ | async as book">
+<form (ngSubmit)="saveAndGoToBookOverview()"
+      [formGroup]="bookForm"
+      #bookFormDirective="ngForm"
+      [class.ng-submitted]="bookFormDirective.submitted">
   <div class="form-group row">
     <label for="author" class="col-sm-2 col-form-label">Author</label>
     <div class="col-sm-10">
       <input id="author"
              type="text"
              class="form-control"
-             [value]="book.author"/>
+             formControlName="author"/>
+      <div class="invalid-feedback">
+        <div *ngFor="let msg of getErrorMessages('author')">{{msg}}</div>
+      </div>
     </div>
   </div>
   <div class="form-group row">
@@ -15,7 +20,10 @@
       <input id="title"
              type="text"
              class="form-control"
-             [value]="book.title" />
+             formControlName="title"/>
+      <div class="invalid-feedback">
+        <div *ngFor="let msg of getErrorMessages('title')">{{msg}}</div>
+      </div>
     </div>
   </div>
   <button type="submit" class="btn btn-primary">Save&nbsp;&&nbsp;Close</button>

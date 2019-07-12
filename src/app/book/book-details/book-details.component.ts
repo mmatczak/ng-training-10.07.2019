@@ -1,9 +1,10 @@
 import { Component, OnDestroy } from '@angular/core';
 import { BookService } from '../services/book.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Book, BookProperties } from '../book';
-import { Observable, of, Subject } from 'rxjs';
+import { Book } from '../book';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-book-details',
@@ -11,44 +12,60 @@ import { takeUntil } from 'rxjs/operators';
   styleUrls: ['./book-details.component.scss']
 })
 export class BookDetailsComponent implements OnDestroy {
-  book$: Observable<Book | BookProperties>;
-  private readonly bookId: number;
+  bookForm: FormGroup;
   private readonly unsubscribe$ = new Subject();
 
   constructor(
     private readonly bookService: BookService,
     private readonly router: Router,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    formBuilder: FormBuilder
   ) {
+    const book: Book = route.snapshot.data.book;
 
-    if (route.snapshot.params.id) {
-      this.bookId = +route.snapshot.params.id;
-      this.book$ = bookService.findOne(this.bookId);
-    } else {
-      this.book$ = of({
-        author: '',
-        title: '',
-      });
-    }
+    this.bookForm = formBuilder.group({
+      author: [book && book.author, [
+        Validators.required,
+        Validators.maxLength(15)]],
+      title: [book && book.title, [
+        Validators.required,
+        Validators.maxLength(25)]]
+    });
   }
 
-  saveAndGoToBookOverview($event: Event) {
-    $event.preventDefault();
-    const form = $event.target as HTMLFormElement;
-    const authorElement = form.querySelector<HTMLInputElement>('input#author');
-    const author = authorElement && authorElement.value;
-    const titleElement = form.querySelector<HTMLInputElement>('input#title');
-    const title = titleElement && titleElement.value;
+  getErrorMessages(formControlName: string): string[] {
+    const errorMessages = [];
 
-    this.bookService.saveOrUpdate({
-      id: this.bookId, author, title
-    })
-      .pipe(
-        takeUntil(this.unsubscribe$)
-      )
-      .subscribe(() => {
-        this.router.navigate(['/books']);
-      });
+    const formControl = this.bookForm.get(formControlName);
+    if (formControl && formControl.errors) {
+      Object.keys(formControl.errors)
+        .forEach(errorCode => {
+          let msg = 'Unknown Error';
+          if (errorCode === 'required') {
+            msg = 'Please provide a value';
+          } else if (errorCode === 'maxlength') {
+            msg = 'Value too long';
+          }
+          errorMessages.push(msg);
+        });
+    }
+
+    return errorMessages;
+  }
+
+  saveAndGoToBookOverview() {
+    if (this.bookForm.valid) {
+      this.bookService.saveOrUpdate({
+        id: +this.route.snapshot.params.id,
+        ...this.bookForm.value
+      })
+        .pipe(
+          takeUntil(this.unsubscribe$)
+        )
+        .subscribe(() => {
+          this.router.navigate(['/books']);
+        });
+    }
   }
 
   ngOnDestroy(): void {

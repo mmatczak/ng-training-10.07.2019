@@ -32,7 +32,7 @@ export class BookService {
   saveOrUpdate(book: Book): Observable<Book> {
     return new Observable(subscriber => {
       let currentBooks = this.bookSubject.getValue();
-      const isUpdate = book.id != null;
+      const isUpdate = book.id != null && !isNaN(book.id);
 
       if (isUpdate) {
         currentBooks = currentBooks.map(

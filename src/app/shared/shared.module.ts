@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { RouterModule } from '@angular/router';
+import { ReactiveFormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -12,7 +13,8 @@ import { RouterModule } from '@angular/router';
   ],
   exports: [
     CommonModule,
-    NavBarComponent
+    NavBarComponent,
+    ReactiveFormsModule
   ]
 })
 export class SharedModule {
