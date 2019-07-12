@@ -1,5 +1,8 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component } from '@angular/core';
+import { BookService } from '../services/book.service';
+import { ActivatedRoute } from '@angular/router';
 import { Book } from '../book';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-book-details',
@@ -7,11 +10,15 @@ import { Book } from '../book';
   styleUrls: ['./book-details.component.scss']
 })
 export class BookDetailsComponent {
-  @Input()
-  book: Book;
+  book$: Observable<Book>;
 
-  @Output()
-  bookChange = new EventEmitter<Book>();
+  constructor(
+    private readonly bookService: BookService,
+    private readonly route: ActivatedRoute
+  ) {
+    const id: number = +route.snapshot.params.id;
+    this.book$ = bookService.findOne(id);
+  }
 
   notifyOnBookChange($event: Event) {
     $event.preventDefault();
@@ -21,11 +28,6 @@ export class BookDetailsComponent {
     const titleElement = form.querySelector<HTMLInputElement>('input#title');
     const title = titleElement && titleElement.value;
 
-    this.bookChange.emit(
-      {
-        ...this.book,
-        author,
-        title
-      });
+    // go to book overview
   }
 }

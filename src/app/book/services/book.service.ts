@@ -1,6 +1,7 @@
 import { Book } from '../book';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subject, Subscriber } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subject, Subscriber, throwError } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +23,8 @@ export class BookService {
   private books$ = this.bookSubject.asObservable();
 
   findAll(): Observable<Book[]> {
-    return this.books$;
+    return this.books$
+      .pipe(delay(2000));
   }
 
   update(book: Book) {
@@ -32,5 +34,12 @@ export class BookService {
       currBook => currBook.id === book.id ? book : currBook);
 
     this.bookSubject.next(currentBooks);
+  }
+
+  findOne(id: number): Observable<Book> {
+    const  currentBooks = this.bookSubject.getValue();
+    const foundBook = currentBooks.find(book => book.id === id);
+    return foundBook ? of(foundBook).pipe(delay(1000)) :
+      throwError(`No book with ${id} found`);
   }
 }
