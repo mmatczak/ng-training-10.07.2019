@@ -1,4 +1,4 @@
-import { Book } from '../book';
+import { Book, BookProperties } from '../book';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, Subject, Subscriber, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
@@ -7,14 +7,16 @@ import { delay } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class BookService {
+  private idSeq = 0;
+
   private bookSubject = new BehaviorSubject([
     {
-      id: 0,
+      id: this.idSeq++,
       author: 'Douglas Crockford',
       title: 'JavaScript. The Good Parts'
     },
     {
-      id: 1,
+      id: this.idSeq++,
       author: 'Kyle Simpson',
       title: 'You don\'t know JS'
     }
@@ -27,13 +29,24 @@ export class BookService {
       .pipe(delay(2000));
   }
 
-  update(book: Book) {
-    let currentBooks = this.bookSubject.getValue();
+  saveOrUpdate(book: Book): Observable<Book> {
+    return new Observable(subscriber => {
+      let currentBooks = this.bookSubject.getValue();
+      const isUpdate = book.id != null;
 
-    currentBooks = currentBooks.map(
-      currBook => currBook.id === book.id ? book : currBook);
+      if (isUpdate) {
+        currentBooks = currentBooks.map(
+          currBook => currBook.id === book.id ? book : currBook);
+      } else {
+        book.id = this.idSeq++;
+        currentBooks.push(book);
+      }
 
-    this.bookSubject.next(currentBooks);
+      this.bookSubject.next(currentBooks);
+
+      subscriber.next(book);
+      subscriber.complete();
+    });
   }
 
   findOne(id: number): Observable<Book> {

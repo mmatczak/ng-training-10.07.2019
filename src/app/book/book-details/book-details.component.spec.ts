@@ -36,7 +36,7 @@ fdescribe('BookDetailsComponent', () => {
         done();
       });
       // when
-      component.notifyOnBookChange(eventMock);
+      component.saveAndGoToBookOverview(eventMock);
     });
   });
 
